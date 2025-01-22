@@ -16,7 +16,8 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    assetsInclude: 'src/renderer/assets/**',
+    baseDir: './',
+    assetsInclude: './src/renderer/src/assets/**',
     resolve: {
       alias: {
         '@app': path.resolve(__dirname, './src/renderer/src/app'),
