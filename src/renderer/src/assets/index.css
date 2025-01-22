@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  #root {
+    @apply h-full;
+  }
+  html,
+  body {
+    @apply h-full;
+    @apply select-none;
+    @apply bg-transparent;
+    @apply font-mono antialiased;
+    @apply overflow-hidden;
+    @apply bg-[#f6f7ff];
+  }
+}
+
+.active {
+  @apply bg-zinc-200 text-zinc-900 font-semibold px-4;
+}
+.input-form {
+  @apply py-0.5 w-full border-2 px-2 rounded-md focus:border-orange-400 outline-none;
+}
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple-animation 600ms linear;
+  background: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
