@@ -13,13 +13,10 @@
     "baseUrl": "./",
     "noUnusedLocals": false,
     "paths": {
-      "@/*": [
-        "src/render/src/*"
-      ],
-      "@renderer/*": [
-        "src/renderer/src/*"
-      ],
-      
+      "@/*": ["src/renderer/src/*"], 
+      "@renderer/*": ["src/renderer/src/*"],
+      "@UI/*": ["src/renderer/src/UI/*"],
+      "@components/*": ["src/renderer/src/components/*"]
     }
   }
 }

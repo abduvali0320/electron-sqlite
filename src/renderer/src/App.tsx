@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import './assets/index.css'
+import '../assets/index.css'
 import IndexPages from './UI/IndexPages'
 import Nav from './components/Nav'
 import Sitebar from './components/Sitebar'
