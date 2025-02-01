@@ -1,55 +1,49 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import { app, BrowserWindow, ipcMain } from 'electron'
+import path from 'path'
+import fs from 'fs'
+let mainWindow: BrowserWindow | null = null
 
-function createWindow(): void {
-  const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
-    show: false,
-    autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+app.whenReady().then(() => {
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      preload: path.join(__dirname, '../preload/index.js'),
+      contextIsolation: false,
+      nodeIntegration: true
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
-  })
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
-
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
-}
-
-app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.electron')
-
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-
-  ipcMain.on('ping', () => console.log('pong'))
-
-  createWindow()
-
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
+  mainWindow.loadURL('http://localhost:5173')
 })
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
+const userDataPath = app.getPath('userData')
+const dataFile = path.join(userDataPath, 'data.json')
+
+ipcMain.handle('get-data', async () => {
+  if (fs.existsSync(dataFile)) {
+    return JSON.parse(fs.readFileSync(dataFile, 'utf-8'))
+  }
+  return []
+})
+
+ipcMain.handle('save-data', async (_, formData: { filePath?: string }) => {
+  try {
+    let savedData: { filePath?: string }[] = []
+    if (fs.existsSync(dataFile)) {
+      savedData = JSON.parse(fs.readFileSync(dataFile, 'utf-8'))
+    }
+    if (formData.filePath) {
+      const fileBuffer = fs.readFileSync(formData.filePath)
+      const base64Image = fileBuffer.toString('base64')
+      formData.filePath = `data:image/png;base64,${base64Image}`
+    }
+
+    savedData.push(formData)
+    fs.writeFileSync(dataFile, JSON.stringify(savedData, null, 2), 'utf-8')
+
+    return { success: true, message: "Ma'lumot saqlandi!" }
+  } catch (error) {
+    return { success: false, message: (error as Error).message }
   }
 })

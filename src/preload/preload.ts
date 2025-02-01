@@ -1,7 +1,7 @@
-import { contextBridge } from 'electron'
-import { addItem, getItems } from '../main/dbmgr'
+import { contextBridge, ipcRenderer } from 'electron'
 
-contextBridge.exposeInMainWorld('api', {
-  addItem: (name: string, image: Buffer) => addItem(name, image),
-  getItems: () => getItems()
+contextBridge.exposeInMainWorld('electron', {
+  ipcRenderer: {
+    invoke: (channel: string, data?: unknown) => ipcRenderer.invoke(channel, data)
+  }
 })
