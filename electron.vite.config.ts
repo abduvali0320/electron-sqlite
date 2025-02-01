@@ -16,7 +16,6 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   renderer: {
-    baseDir: './',
     assetsInclude: './src/renderer/src/assets/**',
     resolve: {
       alias: {
