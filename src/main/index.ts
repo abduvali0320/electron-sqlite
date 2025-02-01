@@ -9,16 +9,18 @@ app.whenReady().then(() => {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
-      contextIsolation: true,
-      nodeIntegration: false
+      contextIsolation: false,
+      nodeIntegration: true
     }
   })
 
   mainWindow.loadURL('http://localhost:5173')
 })
 
+const userDataPath = app.getPath('userData')
+const dataFile = path.join(userDataPath, 'data.json')
+
 ipcMain.handle('get-data', async () => {
-  const dataFile = path.join(app.getPath('userData'), 'data.json')
   if (fs.existsSync(dataFile)) {
     return JSON.parse(fs.readFileSync(dataFile, 'utf-8'))
   }
@@ -26,27 +28,18 @@ ipcMain.handle('get-data', async () => {
 })
 
 ipcMain.handle('save-data', async (_, formData: { filePath?: string }) => {
-  const userDataPath = app.getPath('userData')
-  const dataFile = path.join(userDataPath, 'data.json')
-
   try {
     let savedData: { filePath?: string }[] = []
     if (fs.existsSync(dataFile)) {
       savedData = JSON.parse(fs.readFileSync(dataFile, 'utf-8'))
     }
-
     if (formData.filePath) {
-      const ext = path.extname(formData.filePath)
-      const newFileName = `file-${Date.now()}${ext}`
-      const newFilePath = path.join(userDataPath, newFileName)
-
-      // Faylni nusxalash
-      fs.copyFileSync(formData.filePath, newFilePath)
-      formData.filePath = newFilePath
+      const fileBuffer = fs.readFileSync(formData.filePath)
+      const base64Image = fileBuffer.toString('base64')
+      formData.filePath = `data:image/png;base64,${base64Image}`
     }
 
     savedData.push(formData)
-
     fs.writeFileSync(dataFile, JSON.stringify(savedData, null, 2), 'utf-8')
 
     return { success: true, message: "Ma'lumot saqlandi!" }

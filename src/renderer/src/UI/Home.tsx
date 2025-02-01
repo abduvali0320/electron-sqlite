@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-
 declare global {
   interface Window {
     electron: { ipcRenderer: { invoke: (channel: string, ...args: unknown[]) => Promise<unknown> } }
@@ -7,16 +6,15 @@ declare global {
 }
 
 const { ipcRenderer } = window.electron
-
+interface SavedData {
+  text: string
+  filePath?: string
+}
 import React from 'react'
 
 export default function App(): React.ReactElement {
   const [text, setText] = useState('')
   const [file, setFile] = useState<File | null>(null)
-  interface SavedData {
-    text: string
-    filePath?: string
-  }
 
   const [savedData, setSavedData] = useState<SavedData[]>([])
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -29,11 +27,8 @@ export default function App(): React.ReactElement {
     if (file) {
       formData.filePath = file.path
     }
-
     const response = (await ipcRenderer.invoke('save-data', formData)) as { message: string }
-
     alert(response.message)
-
     loadData()
   }
 
@@ -59,14 +54,14 @@ export default function App(): React.ReactElement {
       <button onClick={handleSave}>Saqlash</button>
       <button onClick={loadData}>Yuklash</button>
       <ul>
-        {savedData.map((item, index) => (
-          <li key={index}>
-            {item.text} <br />
-            {item.filePath && (
-              <img src={`file://${item.filePath}`} alt="Saqlangan Fayl" width="100" />
-            )}
-          </li>
-        ))}
+        {savedData.map((item, index) => {
+          return (
+            <li key={index}>
+              {item.text} <br />
+              <img src={item.filePath} alt="saved" />
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
