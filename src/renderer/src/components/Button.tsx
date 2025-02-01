@@ -1,11 +1,14 @@
 import { ButtonTypes } from '@renderer/types/interfaces'
 import { MouseEvent } from 'react'
-
+interface RippleButtonProps extends ButtonTypes {
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void
+}
 const RippleButton = ({
   children,
   className,
-  rippleColor = 'rgba(255, 255, 255, 0.8)'
-}: ButtonTypes): JSX.Element => {
+  rippleColor = 'rgba(255, 255, 255, 0.8)',
+  onClick
+}: RippleButtonProps): JSX.Element => {
   const createRipple = (event: MouseEvent<HTMLButtonElement>): void => {
     const button = event.currentTarget
     const circle = document.createElement('span')
@@ -25,10 +28,17 @@ const RippleButton = ({
     button.appendChild(circle)
   }
 
+  const handleClick = (event: MouseEvent<HTMLButtonElement>): void => {
+    if (onClick) {
+      onClick(event)
+    }
+    createRipple(event)
+  }
+
   return (
     <button
-      onClick={createRipple}
-      className={`relative overflow-hidden bg-blue-600 text-white font-medium py-2 px-6 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none transition-all duration-300 ${className}`}
+      onClick={handleClick}
+      className={`relative overflow-hidden bg-blue-600 text-white font-medium py-1 px-5 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none transition-all duration-300 ${className}`}
     >
       {children}
     </button>
