@@ -1,93 +1,73 @@
 import { useEffect, useState } from 'react'
-import RippleButton from '../components/Button'
-import axios from 'axios'
-function Home(): JSX.Element {
-  const [inputValue, setInputValue] = useState({
-    name: '',
-    surename: '',
-    patronymic: '',
-    image: null as File | null
-  })
-  const handleAddStudent = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault()
-    console.log('image', inputValue.image)
-    console.log('input value', inputValue)
+
+declare global {
+  interface Window {
+    electron: { ipcRenderer: { invoke: (channel: string, ...args: unknown[]) => Promise<unknown> } }
   }
-  const getInputValue = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setInputValue({ ...inputValue, [e.target.name]: e.target.value })
-  }
-  const getFileImg = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setInputValue({ ...inputValue, image: e.target.files![0] })
-  }
-  const clickHandle = (): void => {
-    console.log('button clicked')
+}
+
+const { ipcRenderer } = window.electron
+
+import React from 'react'
+
+export default function App(): React.ReactElement {
+  const [text, setText] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  interface SavedData {
+    text: string
+    filePath?: string
   }
 
-  const testGetData = async (): Promise<void> => {
-    try {
-      const res = await axios('https://', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      console.log(res)
-    } catch (error) {
-      console.log(error)
+  const [savedData, setSavedData] = useState<SavedData[]>([])
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const file = event.target.files ? event.target.files[0] : null
+    setFile(file)
+  }
+  const handleSave = async (): Promise<void> => {
+    const formData: { text: string; filePath?: string } = { text }
+
+    if (file) {
+      formData.filePath = file.path
     }
+
+    const response = (await ipcRenderer.invoke('save-data', formData)) as { message: string }
+
+    alert(response.message)
+
+    loadData()
+  }
+
+  const loadData = async (): Promise<void> => {
+    const data = (await ipcRenderer.invoke('get-data')) as unknown[]
+
+    setSavedData(data as SavedData[])
   }
 
   useEffect(() => {
-    testGetData()
+    loadData()
   }, [])
-
   return (
-    <div className={'w-full'}>
-      <h1>Talabarlarni ro`yxatga olish</h1>
-      <form onSubmit={handleAddStudent} className="px-4">
-        <div className="grid grid-cols-3 gap-4 items-center mb-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Ism"
-              name="name"
-              onChange={getInputValue}
-              value={inputValue?.name}
-              className="input-form"
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Familya"
-              name="surename"
-              onChange={getInputValue}
-              value={inputValue?.surename}
-              className="input-form"
-            />
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Otasining ismi"
-              name="patronymic"
-              onChange={getInputValue}
-              value={inputValue?.patronymic}
-              className="input-form"
-            />
-          </div>
-          <div>
-            <input type="file" placeholder={'image'} onChange={getFileImg} className="input-form" />
-          </div>
-        </div>
-        <div className="text-end">
-          <RippleButton className={'bg-blue-400 mt-2'} onClick={() => clickHandle()}>
-            Saqlash
-          </RippleButton>
-        </div>
-      </form>
+    <div>
+      <input
+        type="text"
+        placeholder="Matn kiriting..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+      <label htmlFor="fileInput">Choose a file:</label>
+      <input type="file" id="fileInput" onChange={handleFileChange} />
+      <button onClick={handleSave}>Saqlash</button>
+      <button onClick={loadData}>Yuklash</button>
+      <ul>
+        {savedData.map((item, index) => (
+          <li key={index}>
+            {item.text} <br />
+            {item.filePath && (
+              <img src={`file://${item.filePath}`} alt="Saqlangan Fayl" width="100" />
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
-
-export default Home
