@@ -44,9 +44,8 @@ export default function App(): React.ReactElement {
   return (
     <div className="mx-auto p-6">
       <div className="flex space-x-8">
-        {/* Form Section */}
         <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Ma'lumot Kiriting</h2>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Ma`lumot Kiriting</h2>
           <div className="space-y-6">
             <input
               type="text"
@@ -56,7 +55,9 @@ export default function App(): React.ReactElement {
               className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
             />
             <div>
-              <label htmlFor="fileInput" className="block text-sm font-medium text-gray-700">Faylni tanlang:</label>
+              <label htmlFor="fileInput" className="block text-sm font-medium text-gray-700">
+                Faylni tanlang:
+              </label>
               <input
                 type="file"
                 id="fileInput"
@@ -108,6 +109,5 @@ export default function App(): React.ReactElement {
         </div>
       </div>
     </div>
-
   )
 }
